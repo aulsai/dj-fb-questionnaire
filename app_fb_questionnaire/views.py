@@ -44,37 +44,7 @@ class QuestionnaireListView(TemplateView):
             'questionsetitem__question_variation_id__questionchoice',
             'questionsetitem__question_variation_id__questionchoice__choice_id__text'
         )
-        context['qs'] = self._transform_data(qs)
-        context['questionnaire'] = [
-            {
-                'question': "Q1",
-                'question_set_item_id': 1,
-                'choices': [
-                    {
-                        'question_choice_id': 1,
-                        'question_choice_name': 'BMW'
-                    },
-                    {
-                        'question_choice_id': 2,
-                        'question_choice_name': 'Audi'
-                    }
-                ]
-            },
-            {
-                'question': "Q2",
-                'question_set_item_id': 2,
-                'choices': [
-                    {
-                        'question_choice_id': 3,
-                        'question_choice_name': 'Red'
-                    },
-                    {
-                        'question_choice_id': 4,
-                        'question_choice_name': 'Blue'
-                    }
-                ]
-            }
-        ]
+        context['qs'] = self._transform_data(qs)        
 
         return context
 
