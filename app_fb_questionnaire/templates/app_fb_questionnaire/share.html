@@ -6,4 +6,19 @@
         Share your Result
     </h2>
 
+    <div class="fb-share-button" 
+        data-href="{{ share_link }}" 
+        data-layout="button" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.witraphee.com%2F&amp;src=sdkpreparse">Share</a></div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    var host = window.location.hostname;
+    var sharePath = "{{ share_link }}";
+    var shareLink = `${host}${sharePath}`
+    //$('.fb-share-button').attr('data-href', shareLink);
+</script>
+
 {% endblock %}

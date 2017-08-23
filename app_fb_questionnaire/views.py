@@ -24,6 +24,42 @@ class QuestionnaireShareTemplateView(TemplateView):
         fb_user_id = kwargs.get('fb_user_id')
         question_set_id = kwargs.get('question_set_id')
         
+        context['share_link'] = "example.com/ref/{0}/qs/{1}/".format(fb_user_id, question_set_id)
+        return context
+
+class QuestionnaireCompareTemplateView(TemplateView):
+
+    template_name = 'app_fb_questionnaire/result_compare.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(QuestionnaireCompareTemplateView, self).get_context_data(**kwargs)
+        friend_id = kwargs.get('friend_id')
+        question_set_id = kwargs.get('question_set_id')
+
+        # Get Friend object
+        friend = Friend.objects.filter(pk=friend_id).first()
+
+        # Get Latest QuestionSetUser
+        qsu_ref = QuestionSetUser.objects\
+                    .order_by('-id')\
+                    .filter(question_set_id__id=question_set_id, fb_user_id=friend.referrer)\
+                    .first()
+                    
+        qsu_user = QuestionSetUser.objects\
+                    .order_by('-id')\
+                    .filter(question_set_id__id=question_set_id, fb_user_id=friend.user)\
+                    .first()
+
+        #qsi_ref = QuestionSetItem.objects.all().filter(question_set_id=qsu_ref.question_set_id)
+        #qsi_user = QuestionSetItem.objects.all().filter(question_set_id=qsu_user.question_set_id)
+        from django.db.models import Count
+        user_and_friend_answer_same_choice = QuestionSetUserAnswer.objects.all()\
+                                    .filter(question_set_user_id__in=[qsu_ref, qsu_user])\
+                                    .values('question_choice_id')\
+                                    .annotate(count_ans=Count('question_choice_id'))\
+                                    .filter(count_ans__gt=1)
+        
+        context['res'] = user_and_friend_answer_same_choice
         return context
 
 class QuestionnaireListView(TemplateView):
@@ -33,9 +69,14 @@ class QuestionnaireListView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(QuestionnaireListView, self).get_context_data(**kwargs)
 
-        question_set_id = kwargs.get('pk')
+        question_set_id = kwargs.get('question_set_id')
+        # When fb_user_id is provided, friend will be create
+        fb_user_id = kwargs.get('fb_user_id')
+        
+        context['fb_user_id'] = fb_user_id
         context['question_set_id'] = question_set_id
         
+        # TODO - Move to model's query set
         qs = QuestionSet.objects.filter(id=question_set_id)\
             .values(
             'questionsetitem',
@@ -46,7 +87,7 @@ class QuestionnaireListView(TemplateView):
         )
         context['qs'] = self._transform_data(qs)        
 
-        return context
+        return context    
 
     def _transform_data(self, qs):
         map = {}
@@ -85,6 +126,8 @@ def questionnaire_save(request):
         fb_user_id = form_values.get('fb_user_id')
         fb_user_name = form_values.get('fb_user_name')
 
+        ref_fb_user_id = form_values.get('ref_fb_user_id')
+
         list_answer = [form_values[f]
                        for f in form_values if f.startswith('choice_')]
 
@@ -101,8 +144,11 @@ def questionnaire_save(request):
         # Create Answer
         _create_question_set_user_answer(question_set_user, list_answer)
 
-        # TODO - Redirect to share page
-        
+        #_create_friend
+        friend = _create_friend(user, ref_fb_user_id)    
+        if friend:
+            return redirect(reverse('questionnaire-compare', args=[friend.id, question_set_id]))
+
         return redirect(reverse('questionnaire-share', args=[user.ext_id, question_set_id]))
 
     return redirect('/')
@@ -129,6 +175,14 @@ def _create_user(fb_user_id, fb_user_name):
 
 def _create_question_set_user(user, question_set_id):
 
+    qs = QuestionSet.objects.get(pk=question_set_id)
+
+    return QuestionSetUser.objects.create(
+        fb_user_id=user,
+        question_set_id=qs
+    )
+
+    """
     try:
         qsu = QuestionSetUser.objects.order_by('-id').filter(fb_user_id=user, question_set_id=question_set_id).first()        
         if qsu is None:
@@ -142,7 +196,7 @@ def _create_question_set_user(user, question_set_id):
             fb_user_id=user,
             question_set_id=qs
         )
-
+    """
 
 def _create_question_set_user_answer(question_set_user, list_answer):
     # TODO - Bulk create
@@ -154,4 +208,25 @@ def _create_question_set_user_answer(question_set_user, list_answer):
         QuestionSetUserAnswer.objects.create(
             question_set_user_id=question_set_user,
             question_choice_id=qc
+        )
+
+def _create_friend(user, ref_fb_user_id):
+
+    try:
+        existing_relation = Friend.objects.filter(referrer__ext_id=ref_fb_user_id, user=user).first()
+        if not existing_relation:
+            raise Friend.DoesNotExist
+    
+        return existing_relation
+
+    except Friend.DoesNotExist:        
+        ref = None
+        try:
+            ref = FBUser.objects.get(ext_id=ref_fb_user_id)
+        except FBUser.DoesNotExist:
+            return None
+        
+        return Friend.objects.create(
+            referrer=ref,
+            user=user
         )
