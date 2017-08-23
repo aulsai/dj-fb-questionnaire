@@ -4,7 +4,9 @@ services:
     image: mysql
     environment:
       MYSQL_ROOT_PASSWORD: example
-
+    volumes:
+      - ./data:/var/lib/mysql
+      
   adminer:
     image: adminer
     ports:
@@ -14,7 +16,11 @@ services:
     image: my-django-1.6:1.0
     command: ./entry-point.sh
     restart: always
+    links:
+      - db:db
+    environment:
+      DB_HOST: db
     volumes:
       - .:/code
     ports:
-      - "80:8000"
+      - "8000:8000"
