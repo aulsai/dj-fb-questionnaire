@@ -71,7 +71,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'dj_fb_questionnaire',
-        'USER': 'user_dj_fb_questionnaire',
+        'USER': 'user_dj_fb_quest',
         'PASSWORD': '11111111',
         'HOST': 'db'
     }

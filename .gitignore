@@ -103,3 +103,4 @@ ENV/
 
 public_static/*
 docs/*
+data/*
