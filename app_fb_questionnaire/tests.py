@@ -207,6 +207,11 @@ class QuestioinSetModelTests(TestCase):
 
         self.assertEqual(2, count_qs1)
         self.assertEqual(0, count_qs2)
+
+    def test_get_question_choice_list_to_render(self):
+        question_choice_list = QuestionSet.objects.get_question_and_choice_list_by_question_set_id(self.qs1.pk)
+
+        self.assertEqual(1, len(question_choice_list))
         
 
 class FBUserModelTests(TestCase):
@@ -477,22 +482,12 @@ class QuestionSetUserAnswerModelTests(TestCase):
     
     def test_two_user_answer_on_the_same_choices(self):        
 
-        user_and_friend_answer_same_choice = QuestionSetUserAnswer.objects.all()\
-                                    .filter(question_set_user_id__in=[self.qsu1, self.qsu2])\
-                                    .values('question_choice_id')\
-                                    .annotate(count_ans=Count('question_choice_id'))\
-                                    .filter(count_ans__gt=1)                                    
+        user_and_friend_answer_same_choice = QuestionSetUserAnswer.objects\
+                                                .get_same_answer_by_two_question_set_user(self.qsu1, self.qsu2)
 
-        # Total Questions in this QuestionSet
-        all_question_in_this_query_set = len(QuestionSetUserAnswer.objects.all()\
-                                    .filter(question_set_user_id__in=[self.qsu1, self.qsu2])\
-                                    .values('question_set_user_id__question_set_id__questionsetitem')\
-                                    .annotate(count_question=Count('question_set_user_id__question_set_id__questionsetitem'))\
-                                    .all())
-
-        user_and_friend_answer_same_choice_rate = ( len(user_and_friend_answer_same_choice) * 100 ) / all_question_in_this_query_set
-                           
-        self.assertEqual(2, all_question_in_this_query_set)
+        user_and_friend_answer_same_choice_rate = QuestionSetUserAnswer.objects\
+                                                .get_same_answer_rate_by_two_question_set_user(self.qsu1, self.qsu2)
+                                   
         self.assertEqual(1, len(user_and_friend_answer_same_choice))
         self.assertEqual(self.qc1.id, user_and_friend_answer_same_choice[0]['question_choice_id'])
         self.assertEqual(50, user_and_friend_answer_same_choice_rate)

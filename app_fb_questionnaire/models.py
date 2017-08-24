@@ -144,10 +144,13 @@ class QuestionSetUserAnswerManager(models.Manager):
         # Devide by two because it would get for 2 people.
         return self.get_all_choices_by_question_set_user(qsu_ref, qsu_user).count() / 2
 
-    def count_same_answer_by_two_question_set_user(self, qsu_ref, qsu_user):
+    def get_same_answer_by_two_question_set_user(self, qsu_ref, qsu_user):
         return self.get_all_choices_by_question_set_user(qsu_ref, qsu_user)\
                     .annotate(count_ans=Count('question_choice_id'))\
-                    .filter(count_ans__gt=1)\
+                    .filter(count_ans__gt=1)
+
+    def count_same_answer_by_two_question_set_user(self, qsu_ref, qsu_user):
+        return self.get_same_answer_by_two_question_set_user(qsu_ref, qsu_user)\
                     .count()
     
     def get_same_answer_rate_by_two_question_set_user(self, qsu_ref, qsu_user):
