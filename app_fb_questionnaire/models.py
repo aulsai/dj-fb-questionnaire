@@ -53,11 +53,25 @@ class Friend(models.Model):
 
     def __str__(self):
         return self.referrer.name + "_" + self.user.name
-    
+
+class QuestionSetManager(models.Manager):
+
+    def list_question_choices(self, question_set_id):
+        return self.filter(id=question_set_id)\
+            .values(
+            'questionsetitem',
+            'questionsetitem__question_variation_id__questionchoice__question_id',
+            'questionsetitem__question_variation_id__questionchoice__question_id__text',
+            'questionsetitem__question_variation_id__questionchoice',
+            'questionsetitem__question_variation_id__questionchoice__choice_id__text'
+        )
+
 
 class QuestionSet(models.Model):
 
     name = models.CharField(max_length=255)  
+
+    objects = QuestionSetManager()
 
     def __str__(self):
         return self.name
