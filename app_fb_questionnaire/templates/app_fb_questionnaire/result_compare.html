@@ -3,10 +3,22 @@
 {% block content %}
 
     <h2>
-        Compare the result with your friend
+        Congratulation!
     </h2>
 
-    {{ res }}
+    {{ total_choices }}
+
+    <hr/>
+
+    {{ same_choices }}
+
+    <hr/>
+
+    You have {{ percentage_same }}% of the same answers as your friend!
+
+    <div class="fb-share-button" 
+    data-href="{{ share_link }}" 
+    data-layout="button" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.witraphee.com%2F&amp;src=sdkpreparse">Share</a></div>
     
 
 {% endblock %}
