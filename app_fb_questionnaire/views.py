@@ -24,7 +24,7 @@ class QuestionnaireShareTemplateView(TemplateView):
         fb_user_id = kwargs.get('fb_user_id')
         question_set_id = kwargs.get('question_set_id')
         
-        context['share_link'] = "example.com/ref/{0}/qs/{1}/".format(fb_user_id, question_set_id)
+        context['share_link'] = "/ref/{0}/qs/{1}/".format(fb_user_id, question_set_id)
         return context
 
 class QuestionnaireCompareTemplateView(TemplateView):
@@ -39,27 +39,13 @@ class QuestionnaireCompareTemplateView(TemplateView):
         # Get Friend object
         friend = Friend.objects.filter(pk=friend_id).first()
 
-        # Get Latest QuestionSetUser
-        qsu_ref = QuestionSetUser.objects\
-                    .order_by('-id')\
-                    .filter(question_set_id__id=question_set_id, fb_user_id=friend.referrer)\
-                    .first()
-                    
-        qsu_user = QuestionSetUser.objects\
-                    .order_by('-id')\
-                    .filter(question_set_id__id=question_set_id, fb_user_id=friend.user)\
-                    .first()
+        # Get Latest QuestionSetUser        
+        qsu_ref = QuestionSetUser.objects.get_latest_by_id_and_user_id(question_set_id, friend.referrer.ext_id)
+        qsu_user = QuestionSetUser.objects.get_latest_by_id_and_user_id(question_set_id, friend.user.ext_id)
+                
+        context['percentage_same'] = "{0:.2f}".format(QuestionSetUserAnswer.objects.get_same_answer_rate_by_two_question_set_user(qsu_ref, qsu_user))
 
-        #qsi_ref = QuestionSetItem.objects.all().filter(question_set_id=qsu_ref.question_set_id)
-        #qsi_user = QuestionSetItem.objects.all().filter(question_set_id=qsu_user.question_set_id)
-        from django.db.models import Count
-        user_and_friend_answer_same_choice = QuestionSetUserAnswer.objects.all()\
-                                    .filter(question_set_user_id__in=[qsu_ref, qsu_user])\
-                                    .values('question_choice_id')\
-                                    .annotate(count_ans=Count('question_choice_id'))\
-                                    .filter(count_ans__gt=1)
-        
-        context['res'] = user_and_friend_answer_same_choice
+        context['share_link'] = "/ref/{0}/qs/{1}/".format(friend.user.ext_id, question_set_id)
         return context
 
 class QuestionnaireListView(TemplateView):
@@ -74,48 +60,11 @@ class QuestionnaireListView(TemplateView):
         fb_user_id = kwargs.get('fb_user_id')
         
         context['fb_user_id'] = fb_user_id
-        context['question_set_id'] = question_set_id
-        
-        # TODO - Move to model's query set
-        qs = QuestionSet.objects.filter(id=question_set_id)\
-            .values(
-            'questionsetitem',
-            'questionsetitem__question_variation_id__questionchoice__question_id',
-            'questionsetitem__question_variation_id__questionchoice__question_id__text',
-            'questionsetitem__question_variation_id__questionchoice',
-            'questionsetitem__question_variation_id__questionchoice__choice_id__text'
-        )
-        context['qs'] = self._transform_data(qs)        
+        context['question_set_id'] = question_set_id                        
+        context['qs'] = QuestionSet.objects.get_question_and_choice_list_by_question_set_id(question_set_id)
 
         return context    
-
-    def _transform_data(self, qs):
-        map = {}
-        for q in qs:
-            qi_id = q['questionsetitem']
-            q_id = q['questionsetitem__question_variation_id__questionchoice__question_id']
-            q_text = q['questionsetitem__question_variation_id__questionchoice__question_id__text']
-            c_id = q['questionsetitem__question_variation_id__questionchoice']
-            c_text = q['questionsetitem__question_variation_id__questionchoice__choice_id__text']
-
-            if q_id in map:
-                map[q_id]['choices'].append({
-                    'question_choice_id': c_id,
-                    'question_choice_name': c_text
-                })
-            else:
-                map[q_id] = {
-                    'question': q_text,
-                    'question_set_item_id': qi_id,
-                    'choices': [
-                        {
-                            'question_choice_id': c_id,
-                            'question_choice_name': c_text
-                        }
-                    ]
-                }
-
-        return map.viewvalues()
+    
 
 def questionnaire_save(request):
 
@@ -182,26 +131,9 @@ def _create_question_set_user(user, question_set_id):
         question_set_id=qs
     )
 
-    """
-    try:
-        qsu = QuestionSetUser.objects.order_by('-id').filter(fb_user_id=user, question_set_id=question_set_id).first()        
-        if qsu is None:
-            raise QuestionSetUser.DoesNotExist
-        return qsu
-    except QuestionSetUser.DoesNotExist:
-
-        qs = QuestionSet.objects.get(pk=question_set_id)
-
-        return QuestionSetUser.objects.create(
-            fb_user_id=user,
-            question_set_id=qs
-        )
-    """
-
 def _create_question_set_user_answer(question_set_user, list_answer):
     # TODO - Bulk create
-    for ans in list_answer:
-        #key, question_choice_id = ans.split('=')
+    for ans in list_answer:        
 
         qc = QuestionChoice.objects.get(pk=ans)
 
