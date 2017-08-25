@@ -1,10 +1,13 @@
 {% extends 'app_fb_questionnaire/base.html' %}
+{% load static %}
 
 {% block content %}
 
     <h2>
         Share this with your friends !!!
-    </h2>
+    </h2>    
+
+    <img src="{% static 'share_result.png' %}"
 
     <div class="fb-share-button" 
         data-href="{{ share_link }}" 
@@ -13,12 +16,5 @@
 {% endblock %}
 
 {% block scripts %}
-
-<script>
-    var host = window.location.hostname;
-    var sharePath = "{{ share_link }}";
-    var shareLink = `${host}${sharePath}`
-    //$('.fb-share-button').attr('data-href', shareLink);
-</script>
 
 {% endblock %}
