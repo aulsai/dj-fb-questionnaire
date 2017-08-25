@@ -36,8 +36,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'south',
+    'django.contrib.admindocs',
+    
+    'south',    
 
     'app_fb_questionnaire'
 )

@@ -1,8 +1,11 @@
 from django.db import models
 from django.db.models import Count
 
-class Question(models.Model):
 
+class Question(models.Model):
+    """
+    To store each question
+    """
     text = models.CharField(max_length=255)
 
     def __str__(self):

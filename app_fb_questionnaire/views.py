@@ -24,7 +24,7 @@ class QuestionnaireShareTemplateView(TemplateView):
         fb_user_id = kwargs.get('fb_user_id')
         question_set_id = kwargs.get('question_set_id')
         
-        context['share_link'] = "/ref/{0}/qs/{1}/".format(fb_user_id, question_set_id)
+        context['share_link'] = "www.witraphee.com/ref/{0}/qs/{1}/".format(fb_user_id, question_set_id)
         return context
 
 class QuestionnaireCompareTemplateView(TemplateView):
@@ -45,7 +45,7 @@ class QuestionnaireCompareTemplateView(TemplateView):
                 
         context['percentage_same'] = "{0:.2f}".format(QuestionSetUserAnswer.objects.get_same_answer_rate_by_two_question_set_user(qsu_ref, qsu_user))
 
-        context['share_link'] = "/ref/{0}/qs/{1}/".format(friend.user.ext_id, question_set_id)
+        context['share_link'] = "www.witraphee.com/ref/{0}/qs/{1}/".format(friend.user.ext_id, question_set_id)
         return context
 
 class QuestionnaireListView(TemplateView):
