@@ -1,0 +1,35 @@
+{% extends 'app_fb_questionnaire/base.html' %} {% load static %} {% block content %}
+
+<div class="row text-center">
+    <div class="col-md">
+        <h3 class="my-3">
+            Share with your friends !!!
+        </h3>
+
+        <hr />
+
+        <img class="img-fluid" alt="Responsive image" src="{% static 'share_result.png' %}" />        
+
+        <hr />
+
+        <div class="fb-share-button" data-href="{{ share_link }}" data-layout="button" data-size="large" data-mobile-iframe="true">
+            <a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u={{ share_link }}&amp;src=sdkpreparse">
+                Share
+            </a>
+        </div>
+    </div>
+
+    <div class="col-md">
+        
+    </div>
+</div>
+
+
+
+
+
+
+
+</div>
+
+{% endblock %} {% block scripts %} {% endblock %}

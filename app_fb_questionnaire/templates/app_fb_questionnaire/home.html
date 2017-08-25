@@ -1,19 +1,28 @@
-{% extends 'app_fb_questionnaire/base.html' %}
+{% extends 'app_fb_questionnaire/base.html' %} {% block content %}
 
+<div class="row my-3">
+  <div class="col-md">
+    <h2>
+      Questionnaire
+    </h2>
+  </div>
+</div>
 
-{% block content %}
-
-  <h2>
-    Questions
-  </h2>
-  <ul>
-  {% for obj in object_list %}
-    <li>
+<div class="row">
+  <div class="col-md">
+    <ul class="list-group">
+      {% for obj in object_list %}
       <a href="{% url 'questionnaire' obj.id %}">
-        {{ obj }}
+        <li class="list-group-item">
+          {{ obj }}
+        </li>
       </a>
-    </li>
-  {% endfor %}
-  </ul>
-{% endblock  %}}
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="col-md">
+  </div>
+</div>
 
+
+{% endblock %}}

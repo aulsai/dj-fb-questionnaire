@@ -1,32 +1,51 @@
-{% extends 'app_fb_questionnaire/base.html' %}
+{% extends 'app_fb_questionnaire/base.html' %} {% block content %}
 
-{% block content %}
+<div class="row text-center my-5">
+    <div class="col-md">
+        <h2>
+            Finally !!!
+        </h2>
+    </div>
+</div>
 
-    <h2>
-        Congratulation!
-    </h2>
-
-    {{ total_choices }}
-
-    <hr/>
-
-    {{ same_choices }}
-
-    <hr/>
-
-    You have {{ percentage_same }}% of the same answers as your friend!
-
-    <div class="fb-share-button" 
-    data-href="{{ share_link }}" 
-    data-layout="button" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Fwww.witraphee.com%2F&amp;src=sdkpreparse">Share</a></div>
+<div class="row text-center">
     
+    <div class="col-md">
+        <div>
+            <img class="border border-primary" style="width: 50px; height: 50px;"></img>
+        </div>
+        <span>
+            {{ user_1.name }}
+        </span>
+    </div>
 
-{% endblock %}
+    <div class="col-md">
+        VS
+    </div>
 
-{% block scripts %}
+    <div class="col-md">
+        <div>
+            <img class="border border-primary" style="width: 50px; height: 50px;"></img>
+        </div>
+        <span>
+            {{ user_2.name }}
+        </span>
+    </div>
+
+</div>
+
+
+<div class="row text-center mt-5">
+    <div class="col-md">
+        You have {{ percentage_same }}% similarity answer rate as your friend!
+    </div>
+</div>
+
+
+
+{% endblock %} {% block scripts %}
 
 <script>
-        
 </script>
 
 {% endblock %}

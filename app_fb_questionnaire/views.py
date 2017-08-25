@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
 
+from django.conf import settings
 from app_fb_questionnaire.models import *
 
 
@@ -17,14 +18,13 @@ class HomeView(ListView):
 
 class QuestionnaireShareTemplateView(TemplateView):
 
-    template_name = 'app_fb_questionnaire/share.html'
+    template_name = 'app_fb_questionnaire/result_share.html'
 
     def get_context_data(self, **kwargs):
         context = super(QuestionnaireShareTemplateView, self).get_context_data(**kwargs)
         fb_user_id = kwargs.get('fb_user_id')
-        question_set_id = kwargs.get('question_set_id')
-        
-        context['share_link'] = "www.witraphee.com/ref/{0}/qs/{1}/".format(fb_user_id, question_set_id)
+        question_set_id = kwargs.get('question_set_id')                
+        context['share_link'] = get_share_link([fb_user_id, question_set_id]) 
         return context
 
 class QuestionnaireCompareTemplateView(TemplateView):
@@ -44,8 +44,10 @@ class QuestionnaireCompareTemplateView(TemplateView):
         qsu_user = QuestionSetUser.objects.get_latest_by_id_and_user_id(question_set_id, friend.user.ext_id)
                 
         context['percentage_same'] = "{0:.2f}".format(QuestionSetUserAnswer.objects.get_same_answer_rate_by_two_question_set_user(qsu_ref, qsu_user))
+        context['user_1'] = friend.referrer
+        context['user_2'] = friend.user
+        context['share_link'] = get_share_link([friend.user.ext_id, question_set_id])
 
-        context['share_link'] = "www.witraphee.com/ref/{0}/qs/{1}/".format(friend.user.ext_id, question_set_id)
         return context
 
 class QuestionnaireListView(TemplateView):
@@ -60,7 +62,8 @@ class QuestionnaireListView(TemplateView):
         fb_user_id = kwargs.get('fb_user_id')
         
         context['fb_user_id'] = fb_user_id
-        context['question_set_id'] = question_set_id                        
+        context['question_set_id'] = question_set_id      
+        context['question_set_name'] = QuestionSet.objects.get(pk=question_set_id).name                 
         context['qs'] = QuestionSet.objects.get_question_and_choice_list_by_question_set_id(question_set_id)
 
         return context    
@@ -162,3 +165,8 @@ def _create_friend(user, ref_fb_user_id):
             referrer=ref,
             user=user
         )
+
+def get_share_link(args=[]):
+    host = settings.ALLOWED_HOSTS[0] #"http://www.witraphee.com/"
+    share_url = reverse('questionnaire-friend', args=args)
+    return "{0}{1}".format(host, share_url)
